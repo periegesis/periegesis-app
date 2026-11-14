@@ -36,31 +36,43 @@ export function SightRow({
         }}
         asChild
       >
+        {/*
+          Link's asChild merges styles by spreading objects, which drops a
+          style function, so layout stays in a plain object and the pressed
+          state is applied by the children instead.
+        */}
         <Pressable
           accessibilityRole="link"
-          style={({ pressed }) => ({
+          style={{
             flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 12,
             paddingVertical: 12,
             paddingLeft: 16,
             paddingRight: alarm ? 8 : 16,
-            opacity: pressed ? 0.6 : 1,
-          })}
+          }}
         >
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={{ fontSize: 17, color: colors.label }}>{sight.name}</Text>
-            {sight.description ? (
-              <Text
-                numberOfLines={2}
-                style={{ fontSize: 15, lineHeight: 20, color: colors.secondaryLabel }}
-              >
-                {sight.description}
-              </Text>
-            ) : null}
-          </View>
-          <Chevron />
+          {({ pressed }) => (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 12,
+                opacity: pressed ? 0.6 : 1,
+              }}
+            >
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={{ fontSize: 17, color: colors.label }}>{sight.name}</Text>
+                {sight.description ? (
+                  <Text
+                    numberOfLines={2}
+                    style={{ fontSize: 15, lineHeight: 20, color: colors.secondaryLabel }}
+                  >
+                    {sight.description}
+                  </Text>
+                ) : null}
+              </View>
+              <Chevron />
+            </View>
+          )}
         </Pressable>
       </Link>
       {alarm ? (
