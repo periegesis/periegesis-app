@@ -6,10 +6,11 @@ import { Photo } from "@/components/photo";
 import { LoadingState, MessageState } from "@/components/screen-state";
 import { SightMap } from "@/components/sight-map";
 import { useCity } from "@/hooks/use-city";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/colors";
 import { formatCoordinates } from "@/utils/maps-url";
 
 export default function SightScreen() {
+  const colors = useColors();
   useColorScheme();
   const params = useLocalSearchParams<{
     id: string;

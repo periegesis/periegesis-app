@@ -1,33 +1,62 @@
 import { Color } from "expo-router";
-import { Platform, useColorScheme } from "react-native";
+import { useMemo } from "react";
+import { Platform, useColorScheme, type ColorValue } from "react-native";
 
-export const colors = {
-  label: Platform.select({
-    ios: Color.ios.label,
-    android: Color.android.dynamic.onSurface,
-    default: "#000000",
-  })!,
-  secondaryLabel: Platform.select({
-    ios: Color.ios.secondaryLabel,
-    android: Color.android.dynamic.onSurfaceVariant,
-    default: "#3c3c43",
-  })!,
-  background: Platform.select({
-    ios: Color.ios.systemGroupedBackground,
-    android: Color.android.dynamic.surface,
-    default: "#f2f2f7",
-  })!,
-  cardBackground: Platform.select({
-    ios: Color.ios.secondarySystemGroupedBackground,
-    android: Color.android.dynamic.surfaceContainerLow,
-    default: "#ffffff",
-  })!,
-  placeholder: Platform.select({
-    ios: Color.ios.tertiarySystemFill,
-    android: Color.android.dynamic.surfaceContainer,
-    default: "#e5e5ea",
-  })!,
+export type Colors = {
+  label: ColorValue;
+  secondaryLabel: ColorValue;
+  background: ColorValue;
+  cardBackground: ColorValue;
+  placeholder: ColorValue;
 };
+
+// Web fallbacks, matching the iOS system colors.
+const WEB_LIGHT: Colors = {
+  label: "#000000",
+  secondaryLabel: "#3c3c43",
+  background: "#f2f2f7",
+  cardBackground: "#ffffff",
+  placeholder: "#e5e5ea",
+};
+
+const WEB_DARK: Colors = {
+  label: "#ffffff",
+  secondaryLabel: "#ebebf599",
+  background: "#000000",
+  cardBackground: "#1c1c1e",
+  placeholder: "#2c2c2e",
+};
+
+function resolveColors(scheme: "light" | "dark"): Colors {
+  if (Platform.OS === "ios") {
+    // iOS system colors adapt to dark mode natively.
+    return {
+      label: Color.ios.label,
+      secondaryLabel: Color.ios.secondaryLabel,
+      background: Color.ios.systemGroupedBackground,
+      cardBackground: Color.ios.secondarySystemGroupedBackground,
+      placeholder: Color.ios.tertiarySystemFill,
+    };
+  }
+  if (Platform.OS === "android") {
+    // Android dynamic colors resolve to a fixed value for the color scheme
+    // at the moment they're read, so they must be read again on every change.
+    return {
+      label: Color.android.dynamic.onSurface,
+      secondaryLabel: Color.android.dynamic.onSurfaceVariant,
+      background: Color.android.dynamic.surface,
+      cardBackground: Color.android.dynamic.surfaceContainerLow,
+      placeholder: Color.android.dynamic.surfaceContainer,
+    };
+  }
+  return scheme === "dark" ? WEB_DARK : WEB_LIGHT;
+}
+
+/** App colors for the current light/dark mode; re-renders when it changes. */
+export function useColors(): Colors {
+  const scheme = useColorScheme() === "dark" ? "dark" : "light";
+  return useMemo(() => resolveColors(scheme), [scheme]);
+}
 
 /**
  * Brand theme color, lightened in dark mode to stay legible on dark
@@ -36,6 +65,6 @@ export const colors = {
  */
 export function useTintColors() {
   return useColorScheme() === "dark"
-    ? { tint: "#E07FAE", onTint: "#2B0618", onTintStatusBar: "dark" as const }
-    : { tint: "#80134A", onTint: "#ffffff", onTintStatusBar: "light" as const };
+    ? { tint: "#e2b0b7", onTint: "#2B0618", onTintStatusBar: "dark" as const }
+    : { tint: "#541039", onTint: "#ffffff", onTintStatusBar: "light" as const };
 }

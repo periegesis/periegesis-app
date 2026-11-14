@@ -6,9 +6,10 @@ import { CityCard } from "@/components/city-card";
 import { LoadingState, MessageState } from "@/components/screen-state";
 import { useCities, withDisplayNames } from "@/hooks/use-cities";
 import { useCityImport } from "@/hooks/use-city-import";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/colors";
 
 export default function Index() {
+  const colors = useColors();
   useColorScheme();
   const { cities, loading, error, retry, reload } = useCities();
   const { startImport, importing } = useCityImport(reload);

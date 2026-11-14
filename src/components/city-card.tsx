@@ -2,7 +2,7 @@ import { Link } from "expo-router";
 import { Pressable, Text, View, useColorScheme } from "react-native";
 
 import { Photo } from "@/components/photo";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/colors";
 import type { City } from "@/types/city";
 
 export function CityCard({
@@ -15,6 +15,7 @@ export function CityCard({
   /** Overrides `city.name`, e.g. to tell apart cities with the same name. */
   displayName?: string;
 }) {
+  const colors = useColors();
   useColorScheme(); // re-render on theme change so Android dynamic colors update
   const name = displayName ?? city.name;
 

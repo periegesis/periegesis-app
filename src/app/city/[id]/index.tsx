@@ -5,9 +5,10 @@ import { NeighborhoodSection } from "@/components/neighborhood-section";
 import { Photo } from "@/components/photo";
 import { LoadingState, MessageState } from "@/components/screen-state";
 import { useCity } from "@/hooks/use-city";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/colors";
 
 export default function CityScreen() {
+  const colors = useColors();
   useColorScheme();
   const { id, name } = useLocalSearchParams<{ id: string; name?: string }>();
   const { city, loading, error, retry } = useCity(id);

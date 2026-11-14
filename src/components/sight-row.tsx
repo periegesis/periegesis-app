@@ -2,9 +2,9 @@ import { Link } from "expo-router";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { NOTIFICATION_TOGGLE_HEIGHT, NotificationToggle } from "@/components/notification-toggle";
 import { Chevron } from "@/components/chevron";
-import { colors } from "@/theme/colors";
+import { NOTIFICATION_TOGGLE_HEIGHT, NotificationToggle } from "@/components/notification-toggle";
+import { useColors, useTintColors } from "@/theme/colors";
 import type { Sight } from "@/types/city";
 
 const PADDING_VERTICAL = 12;
@@ -31,6 +31,8 @@ export function SightRow({
   sight: Sight;
   notification?: { enabled: boolean; disabled: boolean; onToggle: () => void };
 }) {
+  const colors = useColors();
+  const { tint } = useTintColors();
   // Where the name ends, so the notification toggle can be drawn right after it.
   const [toggleX, setToggleX] = useState<number | null>(null);
 
@@ -56,7 +58,8 @@ export function SightRow({
           accessibilityRole="link"
           style={{
             paddingVertical: PADDING_VERTICAL,
-            paddingHorizontal: PADDING_HORIZONTAL,
+            paddingRight: PADDING_HORIZONTAL,
+            paddingLeft: PADDING_HORIZONTAL - 8,
           }}
         >
           {({ pressed }) => (
@@ -66,6 +69,9 @@ export function SightRow({
                 alignItems: "center",
                 gap: GAP,
                 opacity: pressed ? 0.6 : 1,
+                borderLeftColor: tint,
+                borderLeftWidth: 1,
+                paddingLeft: 8
               }}
             >
               <View style={{ flex: 1, gap: 2 }}>

@@ -1,12 +1,13 @@
 import * as Notifications from "expo-notifications";
-import { Stack, router } from "expo-router";
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { useColorScheme } from "react-native";
 
 import { ToastHost } from "@/components/toast";
 import { geofencingSupported } from "@/geofencing/constants";
 import { syncRegions } from "@/geofencing/store";
-import { useTintColors } from "@/theme/colors";
+import { useColors, useTintColors } from "@/theme/colors";
 
 /** Opens the sight linked from a tapped geofence notification. */
 function useNotificationDeepLinks() {
@@ -25,6 +26,8 @@ function useNotificationDeepLinks() {
 
 export default function RootLayout() {
   const { tint, onTint, onTintStatusBar } = useTintColors();
+  const colors = useColors();
+  const colorScheme = useColorScheme();
   useNotificationDeepLinks();
 
   useEffect(() => {
@@ -32,9 +35,11 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack
         screenOptions={{
+          // Shows behind screens, e.g. during transitions, in light and dark mode.
+          contentStyle: { backgroundColor: colors.background },
           headerStyle: { backgroundColor: tint },
           headerLargeStyle: { backgroundColor: tint },
           headerTintColor: onTint,
@@ -49,6 +54,6 @@ export default function RootLayout() {
       </Stack>
       <ToastHost />
       <StatusBar style={onTintStatusBar} />
-    </>
+    </ThemeProvider>
   );
 }

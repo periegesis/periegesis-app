@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 
-import { NOTIFICATION_TOGGLE_HEIGHT, NotificationToggle } from "@/components/notification-toggle";
 import { Chevron } from "@/components/chevron";
+import { NOTIFICATION_TOGGLE_HEIGHT, NotificationToggle } from "@/components/notification-toggle";
 import { SightRow } from "@/components/sight-row";
 import { hasCoordinates, useGeofences } from "@/hooks/use-geofences";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/colors";
 import type { Neighborhood } from "@/types/city";
 
 const PADDING = 16;
@@ -26,6 +26,7 @@ export function NeighborhoodSection({
   neighborhood: Neighborhood;
   initiallyExpanded?: boolean;
 }) {
+  const colors = useColors();
   const [expanded, setExpanded] = useState(initiallyExpanded);
   // The toggle's measured width (it has an "n/m" label) and where the name
   // ends, so the toggle can be drawn right after the name.
@@ -44,7 +45,6 @@ export function NeighborhoodSection({
     <Animated.View
       layout={LinearTransition}
       style={{
-        backgroundColor: colors.cardBackground,
         borderRadius: 16,
         borderCurve: "continuous",
         overflow: "hidden",
@@ -60,7 +60,7 @@ export function NeighborhoodSection({
             flexDirection: "row",
             alignItems: "center",
             gap: 12,
-            padding: PADDING,
+            paddingVertical: PADDING,
             opacity: pressed ? 0.6 : 1,
           })}
         >
@@ -130,7 +130,6 @@ export function NeighborhoodSection({
                 style={{
                   height: 1,
                   marginLeft: 16,
-                  backgroundColor: colors.placeholder,
                 }}
               />
               <SightRow

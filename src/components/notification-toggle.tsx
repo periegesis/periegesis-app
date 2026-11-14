@@ -1,7 +1,7 @@
 import { SymbolView } from "expo-symbols";
 import { Pressable, Text } from "react-native";
 
-import { colors, useTintColors } from "@/theme/colors";
+import { useColors, useTintColors } from "@/theme/colors";
 
 /** The toggle's height: a 22pt icon plus 4pt padding above and below. */
 export const NOTIFICATION_TOGGLE_HEIGHT = 30;
@@ -22,6 +22,7 @@ export function NotificationToggle({
   accessibilityLabel: string;
   accessibilityHint?: string;
 }) {
+  const colors = useColors();
   const { tint } = useTintColors();
   const color = value ? tint : colors.secondaryLabel;
 
@@ -58,7 +59,7 @@ export function NotificationToggle({
                 android: "notifications_active",
                 web: "notifications_active",
               }
-            : { ios: "bell", android: "notifications", web: "notifications" }
+            : { ios: "bell.slash", android: "notifications_off", web: "notifications" }
         }
         size={22}
         tintColor={color}

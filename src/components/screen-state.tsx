@@ -1,19 +1,22 @@
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
-import { colors, useTintColors } from "@/theme/colors";
+import { useColors, useTintColors, type Colors } from "@/theme/colors";
 
-const centered = {
-  flex: 1,
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 24,
-  gap: 12,
-  backgroundColor: colors.background,
-} as const;
+function centered(colors: Colors) {
+  return {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    gap: 12,
+    backgroundColor: colors.background,
+  } as const;
+}
 
 export function LoadingState() {
+  const colors = useColors();
   return (
-    <View style={centered}>
+    <View style={centered(colors)}>
       <ActivityIndicator />
     </View>
   );
@@ -29,9 +32,10 @@ export function MessageState({
   message?: string;
   onRetry?: () => void;
 }) {
+  const colors = useColors();
   const { tint } = useTintColors();
   return (
-    <View style={centered}>
+    <View style={centered(colors)}>
       <Text selectable style={{ fontSize: 17, color: colors.label }}>
         {title}
       </Text>
