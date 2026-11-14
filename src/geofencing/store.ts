@@ -110,7 +110,12 @@ async function syncWith(geofences: Geofences): Promise<void> {
   );
   if (regions.length > 0) {
     await Location.startGeofencingAsync(GEOFENCE_TASK, regions);
-  } else if (await Location.hasStartedGeofencingAsync(GEOFENCE_TASK)) {
+  } else if (
+    // Querying geofencing throws without background location access, and
+    // nothing can have been started without it, so there's nothing to stop.
+    (await Location.getBackgroundPermissionsAsync()).granted &&
+    (await Location.hasStartedGeofencingAsync(GEOFENCE_TASK))
+  ) {
     await Location.stopGeofencingAsync(GEOFENCE_TASK);
   }
 }
