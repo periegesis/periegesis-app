@@ -3,7 +3,11 @@ import { Alert } from "react-native";
 
 import { showToast } from "@/components/toast";
 import { GEOFENCE_LIMIT, geofencingSupported } from "@/geofencing/constants";
-import { ensureGeofencePermissions } from "@/geofencing/permissions";
+import {
+  ensureGeofencePermissions,
+  explainBackgroundLocationNeeded,
+  isBackgroundLocationMissing,
+} from "@/geofencing/permissions";
 import {
   disableSights,
   enableSights,
@@ -40,8 +44,14 @@ function limitMessage(adding: number) {
   return `Can't turn on ${alarms}: this device allows up to ${GEOFENCE_LIMIT} sight alarms at once.`;
 }
 
-function reportError(e: unknown) {
+async function reportError(e: unknown) {
   console.error(e);
+  // Background location can be revoked in Settings at any time, which makes
+  // geofencing calls fail; say so instead of showing a generic error.
+  if (await isBackgroundLocationMissing()) {
+    explainBackgroundLocationNeeded();
+    return;
+  }
   Alert.alert("Couldn't update alarms", "Something went wrong. Please try again.");
 }
 
@@ -79,7 +89,7 @@ export function useGeofences() {
         if (id in getSnapshot()) await disableSights([id]);
         else await enable([toEntry(cityId, neighborhood, sightIndex, sight)]);
       } catch (e) {
-        reportError(e);
+        await reportError(e);
       }
     },
     [enable],
@@ -106,7 +116,7 @@ export function useGeofences() {
           );
         }
       } catch (e) {
-        reportError(e);
+        await reportError(e);
       }
     },
     [enable],

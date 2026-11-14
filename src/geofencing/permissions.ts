@@ -1,16 +1,53 @@
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
-import { Alert, Linking } from "react-native";
+import { Alert, Linking, Platform } from "react-native";
 
-import { SIGHT_CHANNEL_ID } from "./constants";
+import { SIGHT_CHANNEL_ID, geofencingSupported } from "./constants";
 
 let warnedAboutNotifications = false;
+
+/** The name of the background location setting as the OS labels it. */
+const ALWAYS_SETTING = Platform.OS === "ios" ? '"Always"' : '"Allow all the time"';
 
 function explainDenied(message: string) {
   Alert.alert("Location access needed", message, [
     { text: "Cancel", style: "cancel" },
     { text: "Open Settings", onPress: () => Linking.openSettings() },
   ]);
+}
+
+/** Tells the user that sight alarms need background location, with a link to Settings. */
+export function explainBackgroundLocationNeeded() {
+  explainDenied(
+    `Sight alarms work while the app is closed, so location access must be set to ${ALWAYS_SETTING}. Turn it on in Settings, then try again.`,
+  );
+}
+
+/** Whether background location is currently missing, e.g. to explain a failure. */
+export async function isBackgroundLocationMissing(): Promise<boolean> {
+  if (!geofencingSupported) return false;
+  try {
+    return !(await Location.getBackgroundPermissionsAsync()).granted;
+  } catch {
+    return false;
+  }
+}
+
+/** Explains why background location is needed; resolves true if the user wants to continue. */
+function confirmBackgroundLocation(): Promise<boolean> {
+  return new Promise((resolve) => {
+    Alert.alert(
+      "Alerts near sights",
+      `Sight alarms let you know when you're near a sight, even while Periegesis is closed. ` +
+        `To do that, Periegesis needs location access set to ${ALWAYS_SETTING}.\n\n` +
+        `Your location is only used on this device to check whether you're near a sight you've set an alarm for.`,
+      [
+        { text: "Not Now", style: "cancel", onPress: () => resolve(false) },
+        { text: "Continue", onPress: () => resolve(true) },
+      ],
+      { cancelable: true, onDismiss: () => resolve(false) },
+    );
+  });
 }
 
 /** The notification channel must exist before Android 13+ will ask for permission. */
@@ -29,6 +66,13 @@ export async function ensureSightChannel(): Promise<void> {
  * only warns, since the geofence itself still works.
  */
 export async function ensureGeofencePermissions(): Promise<boolean> {
+  // Explain before the OS prompts appear the first time; afterwards the OS
+  // remembers the answer, so the explanation would only get in the way.
+  const current = await Location.getBackgroundPermissionsAsync();
+  if (current.status === Location.PermissionStatus.UNDETERMINED) {
+    if (!(await confirmBackgroundLocation())) return false;
+  }
+
   const foreground = await Location.requestForegroundPermissionsAsync();
   if (!foreground.granted) {
     explainDenied(
@@ -39,9 +83,7 @@ export async function ensureGeofencePermissions(): Promise<boolean> {
 
   const background = await Location.requestBackgroundPermissionsAsync();
   if (!background.granted) {
-    explainDenied(
-      'Sight alarms work while the app is closed, so location access must be set to "Always" (iOS) or "Allow all the time" (Android).',
-    );
+    explainBackgroundLocationNeeded();
     return false;
   }
 
