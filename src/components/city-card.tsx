@@ -1,5 +1,5 @@
-import { SymbolView } from "expo-symbols";
 import { Link } from "expo-router";
+import { SymbolView } from "expo-symbols";
 import { Pressable, Text, View, useColorScheme } from "react-native";
 
 import { Photo } from "@/components/photo";
@@ -27,18 +27,10 @@ export function CityCard({
   useColorScheme(); // re-render on theme change so Android dynamic colors update
   const name = displayName ?? city.name;
 
-  const cardStyle = {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 16,
-    borderCurve: "continuous",
-    overflow: "hidden",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
-  } as const;
-
   const content = (
     <>
       <Photo photo={city.photo} />
-      <View style={{ padding: 16, gap: 6 }}>
+      <View style={{ padding: 4, gap: 8 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Text style={{ flex: 1, fontSize: 20, fontWeight: "600", color: colors.label }}>
             {name}
@@ -74,14 +66,14 @@ export function CityCard({
 
   // In delete mode the card is a plain view, so the trash button is its only
   // action and can't be confused with opening the city.
-  if (onDelete) return <View style={cardStyle}>{content}</View>;
+  if (onDelete) return <View>{content}</View>;
 
   // Link's asChild merges styles by spreading objects, which drops a style
   // function, so the card style stays a plain object and the pressed state is
   // applied by the children instead.
   return (
     <Link href={{ pathname: "/city/[id]", params: { id, name } }} asChild>
-      <Pressable accessibilityRole="link" style={cardStyle}>
+      <Pressable accessibilityRole="link">
         {({ pressed }) => <View style={{ opacity: pressed ? 0.7 : 1 }}>{content}</View>}
       </Pressable>
     </Link>
