@@ -11,7 +11,7 @@ import {
 
 export const GEOFENCES_KEY = "periegesis-geofences";
 
-/** A sight the user has set an alarm for. */
+/** A sight the user has turned notifications on for. */
 export type GeofenceEntry = {
   cityId: string;
   neighborhood: number;

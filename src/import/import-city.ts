@@ -93,7 +93,7 @@ export async function importCity(
       return fileName ? `${cityPhotoPath(id)}/${fileName}` : photo;
     });
     await saveCity(id, city, hash);
-    // Sights may have moved or changed, so their alarms no longer apply.
+    // Sights may have moved or changed, so their notifications no longer apply.
     if (replacing) await removeCityGeofences(id);
     return "imported";
   } finally {

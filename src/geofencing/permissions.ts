@@ -16,10 +16,10 @@ function explainDenied(message: string) {
   ]);
 }
 
-/** Tells the user that sight alarms need background location, with a link to Settings. */
+/** Tells the user that sight notifications need background location, with a link to Settings. */
 export function explainBackgroundLocationNeeded() {
   explainDenied(
-    `Sight alarms work while the app is closed, so location access must be set to ${ALWAYS_SETTING}. Turn it on in Settings, then try again.`,
+    `Sight notifications work while the app is closed, so location access must be set to ${ALWAYS_SETTING}. Turn it on in Settings, then try again.`,
   );
 }
 
@@ -38,9 +38,9 @@ function confirmBackgroundLocation(): Promise<boolean> {
   return new Promise((resolve) => {
     Alert.alert(
       "Alerts near sights",
-      `Sight alarms let you know when you're near a sight, even while Periegesis is closed. ` +
+      `Sight notifications let you know when you're near a sight, even while Periegesis is closed. ` +
         `To do that, Periegesis needs location access set to ${ALWAYS_SETTING}.\n\n` +
-        `Your location is only used on this device to check whether you're near a sight you've set an alarm for.`,
+        `Your location is only used on this device to check whether you're near a sight for which you've turned on notifications.`,
       [
         { text: "Not Now", style: "cancel", onPress: () => resolve(false) },
         { text: "Continue", onPress: () => resolve(true) },
@@ -54,13 +54,13 @@ function confirmBackgroundLocation(): Promise<boolean> {
 export async function ensureSightChannel(): Promise<void> {
   await Notifications.setNotificationChannelAsync(SIGHT_CHANNEL_ID, {
     name: "Nearby sights",
-    description: "Alerts when you're near a sight you've set an alarm for",
+    description: "Alerts when you're near a sight for which you've turned on notifications",
     importance: Notifications.AndroidImportance.HIGH,
   });
 }
 
 /**
- * Asks for what sight alarms need: background ("Always") location to monitor
+ * Asks for what sight notifications need: background ("Always") location to monitor
  * regions, and notifications to alert the user. Returns false, after telling
  * the user why, if location isn't granted. Missing notification permission
  * only warns, since the geofence itself still works.
@@ -96,7 +96,7 @@ export async function ensureGeofencePermissions(): Promise<boolean> {
     warnedAboutNotifications = true;
     Alert.alert(
       "Notifications are off",
-      "Your alarm is set, but you won't be alerted until you allow notifications for Periegesis in Settings.",
+      "Periegesis will watch for this sight, but you won't be alerted until you allow notifications for Periegesis in Settings.",
     );
   }
   return true;

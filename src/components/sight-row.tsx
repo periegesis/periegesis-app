@@ -1,30 +1,41 @@
 import { Link } from "expo-router";
+import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { AlarmToggle } from "@/components/alarm-toggle";
+import { NOTIFICATION_TOGGLE_HEIGHT, NotificationToggle } from "@/components/notification-toggle";
 import { Chevron } from "@/components/chevron";
 import { colors } from "@/theme/colors";
 import type { Sight } from "@/types/city";
 
+const PADDING_VERTICAL = 12;
+const PADDING_HORIZONTAL = 16;
+const GAP = 12;
+const NAME_LINE_HEIGHT = 22;
+/** Space between the toggle's box and its neighbors; its 4pt padding adds the rest. */
+const TOGGLE_GAP = 8;
+
 /**
  * A tappable sight summary (name and description) that opens its details,
- * with an optional alarm toggle beside it.
+ * with an optional notification toggle right after the name.
  */
 export function SightRow({
   cityId,
   neighborhoodIndex,
   sightIndex,
   sight,
-  alarm,
+  notification,
 }: {
   cityId: string;
   neighborhoodIndex: number;
   sightIndex: number;
   sight: Sight;
-  alarm?: { enabled: boolean; disabled: boolean; onToggle: () => void };
+  notification?: { enabled: boolean; disabled: boolean; onToggle: () => void };
 }) {
+  // Where the name ends, so the notification toggle can be drawn right after it.
+  const [toggleX, setToggleX] = useState<number | null>(null);
+
   return (
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
+    <View>
       <Link
         href={{
           pathname: "/city/[id]/[neighborhood]/[sight]",
@@ -44,10 +55,8 @@ export function SightRow({
         <Pressable
           accessibilityRole="link"
           style={{
-            flex: 1,
-            paddingVertical: 12,
-            paddingLeft: 16,
-            paddingRight: alarm ? 8 : 16,
+            paddingVertical: PADDING_VERTICAL,
+            paddingHorizontal: PADDING_HORIZONTAL,
           }}
         >
           {({ pressed }) => (
@@ -55,12 +64,30 @@ export function SightRow({
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                gap: 12,
+                gap: GAP,
                 opacity: pressed ? 0.6 : 1,
               }}
             >
               <View style={{ flex: 1, gap: 2 }}>
-                <Text style={{ fontSize: 17, color: colors.label }}>{sight.name}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: TOGGLE_GAP }}>
+                  <Text
+                    style={{
+                      flexShrink: 1,
+                      fontSize: 17,
+                      lineHeight: NAME_LINE_HEIGHT,
+                      color: colors.label,
+                    }}
+                  >
+                    {sight.name}
+                  </Text>
+                  {notification ? (
+                    // Holds the place the notification toggle is drawn over.
+                    <View
+                      onLayout={(event) => setToggleX(event.nativeEvent.layout.x)}
+                      style={{ width: NOTIFICATION_TOGGLE_HEIGHT, height: NAME_LINE_HEIGHT }}
+                    />
+                  ) : null}
+                </View>
                 {sight.description ? (
                   <Text
                     numberOfLines={2}
@@ -75,15 +102,25 @@ export function SightRow({
           )}
         </Pressable>
       </Link>
-      {alarm ? (
-        <View style={{ paddingRight: 12 }}>
-          <AlarmToggle
-            value={alarm.enabled}
-            disabled={alarm.disabled}
-            onToggle={alarm.onToggle}
-            accessibilityLabel={`Alarm near ${sight.name}`}
+      {notification ? (
+        // A sibling of the link rather than a child, so screen readers can
+        // reach it on its own; drawn right after the name. Without a label
+        // the toggle is square. Hidden until the name has been laid out.
+        <View
+          style={{
+            position: "absolute",
+            top: PADDING_VERTICAL + (NAME_LINE_HEIGHT - NOTIFICATION_TOGGLE_HEIGHT) / 2,
+            left: PADDING_HORIZONTAL + (toggleX ?? 0),
+            opacity: toggleX == null ? 0 : 1,
+          }}
+        >
+          <NotificationToggle
+            value={notification.enabled}
+            disabled={notification.disabled}
+            onToggle={notification.onToggle}
+            accessibilityLabel={`Notification near ${sight.name}`}
             accessibilityHint={
-              alarm.disabled ? "Sight alarm limit reached" : undefined
+              notification.disabled ? "Sight notification limit reached" : undefined
             }
           />
         </View>

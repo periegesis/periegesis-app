@@ -2,12 +2,17 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 
-import { AlarmToggle } from "@/components/alarm-toggle";
+import { NOTIFICATION_TOGGLE_HEIGHT, NotificationToggle } from "@/components/notification-toggle";
 import { Chevron } from "@/components/chevron";
 import { SightRow } from "@/components/sight-row";
 import { hasCoordinates, useGeofences } from "@/hooks/use-geofences";
 import { colors } from "@/theme/colors";
 import type { Neighborhood } from "@/types/city";
+
+const PADDING = 16;
+const NAME_LINE_HEIGHT = 22;
+/** Space between the toggle's box and its neighbors; its 4pt padding adds the rest. */
+const TOGGLE_GAP = 8;
 
 /** A neighborhood header that expands to list the neighborhood's sights. */
 export function NeighborhoodSection({
@@ -22,14 +27,18 @@ export function NeighborhoodSection({
   initiallyExpanded?: boolean;
 }) {
   const [expanded, setExpanded] = useState(initiallyExpanded);
+  // The toggle's measured width (it has an "n/m" label) and where the name
+  // ends, so the toggle can be drawn right after the name.
+  const [toggleWidth, setToggleWidth] = useState(NOTIFICATION_TOGGLE_HEIGHT);
+  const [toggleX, setToggleX] = useState<number | null>(null);
   const count = neighborhood.sights.length;
   const geofences = useGeofences();
-  const alarmable = neighborhood.sights.filter(hasCoordinates).length;
-  const alarmsOn = neighborhood.sights.filter(
+  const notifiable = neighborhood.sights.filter(hasCoordinates).length;
+  const notificationsOn = neighborhood.sights.filter(
     (sight, sightIndex) =>
       hasCoordinates(sight) && geofences.isEnabled(cityId, index, sightIndex),
   ).length;
-  const showAlarms = geofences.supported && alarmable > 0;
+  const showNotifications = geofences.supported && notifiable > 0;
 
   return (
     <Animated.View
@@ -41,26 +50,41 @@ export function NeighborhoodSection({
         overflow: "hidden",
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View>
         <Pressable
           onPress={() => setExpanded((value) => !value)}
           accessibilityRole="button"
           accessibilityState={{ expanded }}
           accessibilityHint={expanded ? "Hides sights" : "Shows sights"}
           style={({ pressed }) => ({
-            flex: 1,
             flexDirection: "row",
             alignItems: "center",
             gap: 12,
-            padding: 16,
-            paddingRight: showAlarms ? 8 : 16,
+            padding: PADDING,
             opacity: pressed ? 0.6 : 1,
           })}
         >
           <View style={{ flex: 1, gap: 4 }}>
-            <Text style={{ fontSize: 17, fontWeight: "600", color: colors.label }}>
-              {neighborhood.name}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: TOGGLE_GAP }}>
+              <Text
+                style={{
+                  flexShrink: 1,
+                  fontSize: 17,
+                  lineHeight: NAME_LINE_HEIGHT,
+                  fontWeight: "600",
+                  color: colors.label,
+                }}
+              >
+                {neighborhood.name}
+              </Text>
+              {showNotifications ? (
+                // Holds the place the notification toggle is drawn over.
+                <View
+                  onLayout={(event) => setToggleX(event.nativeEvent.layout.x)}
+                  style={{ width: toggleWidth, height: NAME_LINE_HEIGHT }}
+                />
+              ) : null}
+            </View>
             {neighborhood.description ? (
               <Text style={{ fontSize: 15, lineHeight: 20, color: colors.secondaryLabel }}>
                 {neighborhood.description}
@@ -72,16 +96,27 @@ export function NeighborhoodSection({
           </View>
           <Chevron expanded={expanded} />
         </Pressable>
-        {showAlarms ? (
-          <View style={{ paddingRight: 12 }}>
-            {/* Any alarm on (even partially) shows as on; toggling clears them all. */}
-            <AlarmToggle
-              value={alarmsOn > 0}
-              disabled={alarmsOn === 0 && geofences.atLimit}
+        {showNotifications ? (
+          // A sibling of the header button rather than a child, so screen
+          // readers can reach it on its own; drawn right after the name.
+          // Hidden until the name has been laid out.
+          <View
+            onLayout={(event) => setToggleWidth(event.nativeEvent.layout.width)}
+            style={{
+              position: "absolute",
+              top: PADDING + (NAME_LINE_HEIGHT - NOTIFICATION_TOGGLE_HEIGHT) / 2,
+              left: PADDING + (toggleX ?? 0),
+              opacity: toggleX == null ? 0 : 1,
+            }}
+          >
+            {/* Any notification on (even partially) shows as on; toggling clears them all. */}
+            <NotificationToggle
+              value={notificationsOn > 0}
+              disabled={notificationsOn === 0 && geofences.atLimit}
               onToggle={() => geofences.toggleNeighborhood(cityId, index, neighborhood)}
-              label={`${alarmsOn}/${alarmable}`}
-              accessibilityLabel={`Alarms for all sights in ${neighborhood.name}`}
-              accessibilityHint={`This device allows up to ${geofences.limit} sight alarms in total`}
+              label={`${notificationsOn}/${notifiable}`}
+              accessibilityLabel={`Notifications for all sights in ${neighborhood.name}`}
+              accessibilityHint={`This device allows up to ${geofences.limit} sight notifications in total`}
             />
           </View>
         ) : null}
@@ -103,7 +138,7 @@ export function NeighborhoodSection({
                 neighborhoodIndex={index}
                 sightIndex={sightIndex}
                 sight={sight}
-                alarm={
+                notification={
                   geofences.supported && hasCoordinates(sight)
                     ? {
                         enabled: geofences.isEnabled(cityId, index, sightIndex),

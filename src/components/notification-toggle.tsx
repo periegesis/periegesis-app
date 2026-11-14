@@ -3,8 +3,11 @@ import { Pressable, Text } from "react-native";
 
 import { colors, useTintColors } from "@/theme/colors";
 
-/** An alarm-icon switch, optionally with a short label such as "3/8". */
-export function AlarmToggle({
+/** The toggle's height: a 22pt icon plus 4pt padding above and below. */
+export const NOTIFICATION_TOGGLE_HEIGHT = 30;
+
+/** A bell-icon switch for sight notifications, optionally with a short label such as "3/8". */
+export function NotificationToggle({
   value,
   onToggle,
   disabled = false,
@@ -50,8 +53,12 @@ export function AlarmToggle({
       <SymbolView
         name={
           value
-            ? { ios: "alarm.fill", android: "alarm_on", web: "alarm_on" }
-            : { ios: "alarm", android: "alarm", web: "alarm" }
+            ? {
+                ios: "bell.fill",
+                android: "notifications_active",
+                web: "notifications_active",
+              }
+            : { ios: "bell", android: "notifications", web: "notifications" }
         }
         size={22}
         tintColor={color}

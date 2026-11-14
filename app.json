@@ -40,8 +40,8 @@
         {
           "isAndroidBackgroundLocationEnabled": true,
           "isIosBackgroundLocationEnabled": true,
-          "locationAlwaysAndWhenInUsePermission": "Periegesis uses your location in the background to alert you when you're near sights you've set alarms for.",
-          "locationWhenInUsePermission": "Periegesis uses your location to alert you when you're near sights you've set alarms for."
+          "locationAlwaysAndWhenInUsePermission": "Periegesis uses your location in the background to alert you when you're near sights for which you've turned on notifications.",
+          "locationWhenInUsePermission": "Periegesis uses your location to alert you when you're near sights for which you've turned on notifications."
         }
       ],
       "expo-notifications"

@@ -40,8 +40,8 @@ function toEntry(
 }
 
 function limitMessage(adding: number) {
-  const alarms = adding === 1 ? "1 alarm" : `${adding} alarms`;
-  return `Can't turn on ${alarms}: this device allows up to ${GEOFENCE_LIMIT} sight alarms at once.`;
+  const notifications = adding === 1 ? "1 notification" : `${adding} notifications`;
+  return `Can't turn on ${notifications}: this device allows up to ${GEOFENCE_LIMIT} sight notifications at once.`;
 }
 
 async function reportError(e: unknown) {
@@ -52,10 +52,10 @@ async function reportError(e: unknown) {
     explainBackgroundLocationNeeded();
     return;
   }
-  Alert.alert("Couldn't update alarms", "Something went wrong. Please try again.");
+  Alert.alert("Couldn't update notifications", "Something went wrong. Please try again.");
 }
 
-/** Sight alarm (geofence) state shared across the app, with actions to change it. */
+/** Sight notification (geofence) state shared across the app, with actions to change it. */
 export function useGeofences() {
   const geofences = useSyncExternalStore(subscribe, getSnapshot);
   const count = Object.keys(geofences).length;
@@ -96,7 +96,7 @@ export function useGeofences() {
   );
 
   /**
-   * Turns off every alarm in the neighborhood if any are on; otherwise turns
+   * Turns off every notification in the neighborhood if any are on; otherwise turns
    * them all on, unless that would exceed the platform limit.
    */
   const toggleNeighborhood = useCallback(
