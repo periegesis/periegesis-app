@@ -1,12 +1,15 @@
-import { useMemo } from "react";
-import { FlatList, Text, View, useColorScheme } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { Alert, FlatList, Text, View, useColorScheme } from "react-native";
 
 import { AddCityButton } from "@/components/add-city-button";
 import { CityCard } from "@/components/city-card";
+import { HomeHeader } from "@/components/home-header";
 import { LoadingState, MessageState } from "@/components/screen-state";
 import { useCities, withDisplayNames } from "@/hooks/use-cities";
 import { useCityImport } from "@/hooks/use-city-import";
+import { removeCity } from "@/storage/cities";
 import { useColors } from "@/theme/colors";
+import { confirmDelete } from "@/utils/confirm";
 
 export default function Index() {
   const colors = useColors();
@@ -14,6 +17,23 @@ export default function Index() {
   const { cities, loading, error, retry, reload } = useCities();
   const { startImport, importing } = useCityImport(reload);
   const displayCities = useMemo(() => withDisplayNames(cities), [cities]);
+  const [deleteMode, setDeleteMode] = useState(false);
+  // Leaves delete mode once there's nothing left to delete.
+  const deleting = deleteMode && displayCities.length > 0;
+
+  const deleteCity = useCallback(
+    async (id: string, name: string) => {
+      if (!(await confirmDelete(`Are you sure you want to delete ${name}?`))) return;
+      try {
+        await removeCity(id);
+      } catch (e) {
+        console.error(e);
+        Alert.alert("Couldn't delete city", "Something went wrong. Please try again.");
+      }
+      await reload();
+    },
+    [reload],
+  );
 
   if (loading) return <LoadingState />;
 
@@ -29,6 +49,14 @@ export default function Index() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <HomeHeader
+        deleting={deleting}
+        canDelete={displayCities.length > 0}
+        onStartDeleting={() => setDeleteMode(true)}
+        onDone={() => setDeleteMode(false)}
+        onAdd={startImport}
+        addDisabled={importing}
+      />
       <FlatList
         data={displayCities}
         keyExtractor={(item) => item.id}
@@ -37,6 +65,7 @@ export default function Index() {
             id={item.id}
             city={item.city}
             displayName={item.displayName}
+            onDelete={deleting ? () => deleteCity(item.id, item.displayName) : undefined}
           />
         )}
         contentInsetAdjustmentBehavior="automatic"
@@ -59,8 +88,8 @@ export default function Index() {
           </View>
         }
       />
-      <AddCityButton onPress={startImport} disabled={importing} />
+      {/* Adding is in the header on iOS; elsewhere it's this button, hidden while deleting. */}
+      {deleting ? null : <AddCityButton onPress={startImport} disabled={importing} />}
     </View>
   );
 }
-

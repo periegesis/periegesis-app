@@ -3,8 +3,9 @@ export type AddCityButtonProps = {
   disabled?: boolean;
 };
 
-// Importing needs expo-file-system to store photos, which isn't available on
-// web, so there is no Add button there.
+// On iOS the Add button is in the header toolbar (see HomeHeader). Web has
+// none: importing needs expo-file-system to store photos, which isn't
+// available there.
 export function AddCityButton(_props: AddCityButtonProps) {
   return null;
 }

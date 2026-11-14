@@ -8,6 +8,8 @@ export type Colors = {
   background: ColorValue;
   cardBackground: ColorValue;
   placeholder: ColorValue;
+  /** For destructive actions, such as delete buttons. */
+  destructive: ColorValue;
 };
 
 // Web fallbacks, matching the iOS system colors.
@@ -17,6 +19,7 @@ const WEB_LIGHT: Colors = {
   background: "#f2f2f7",
   cardBackground: "#ffffff",
   placeholder: "#e5e5ea",
+  destructive: "#ff3b30",
 };
 
 const WEB_DARK: Colors = {
@@ -25,6 +28,7 @@ const WEB_DARK: Colors = {
   background: "#000000",
   cardBackground: "#1c1c1e",
   placeholder: "#2c2c2e",
+  destructive: "#ff453a",
 };
 
 function resolveColors(scheme: "light" | "dark"): Colors {
@@ -36,6 +40,7 @@ function resolveColors(scheme: "light" | "dark"): Colors {
       background: Color.ios.systemGroupedBackground,
       cardBackground: Color.ios.secondarySystemGroupedBackground,
       placeholder: Color.ios.tertiarySystemFill,
+      destructive: Color.ios.systemRed,
     };
   }
   if (Platform.OS === "android") {
@@ -47,6 +52,7 @@ function resolveColors(scheme: "light" | "dark"): Colors {
       background: Color.android.dynamic.surface,
       cardBackground: Color.android.dynamic.surfaceContainerLow,
       placeholder: Color.android.dynamic.surfaceContainer,
+      destructive: Color.android.dynamic.error,
     };
   }
   return scheme === "dark" ? WEB_DARK : WEB_LIGHT;
